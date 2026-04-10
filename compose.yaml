@@ -1,0 +1,17 @@
+services:
+  pg-index-lab:
+    image: postgres:16
+    container_name: pg-index-lab
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: indexlab
+      POSTGRES_USER: labuser
+      POSTGRES_PASSWORD: labpass
+    ports:
+      - "5436:5432"
+    volumes:
+      - pg_index_lab_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+
+volumes:
+  pg_index_lab_data:
