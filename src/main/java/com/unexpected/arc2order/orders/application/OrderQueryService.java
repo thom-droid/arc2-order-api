@@ -20,9 +20,13 @@ public class OrderQueryService {
     }
 
     public Page<OrderEntity> getOrders(Long customerId, String status, Pageable pageable) {
-        if (customerId == null) {
+        if (customerId == null && status == null) {
             return orderRepository.findAll(pageable);
-        } else if (status == null) {
+        }
+        if (customerId == null) {
+            return orderRepository.findAllByStatus(status, pageable);
+        }
+        if (status == null) {
             return orderRepository.findAllByCustomerId(customerId, pageable);
         }
         return orderRepository.findAllByCustomerIdAndStatus(customerId, status, pageable);

@@ -18,20 +18,14 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public OrderDetailResponse getOrderDetailById(@PathVariable Long orderId) {
         OrderEntity order = orderQueryService.getOrderById(orderId);
-        return new OrderDetailResponse(
-                order.getId(),
-                order.getCustomerId(),
-                order.getStatus(),
-                order.getCreatedAt(),
-                order.getAmount()
-        );
+        return OrderDetailResponse.from(order);
     }
 
     @GetMapping
     public OrderPageResponse getOrderEntities(@RequestParam(defaultValue = "0") int pageNumber,
                                                       @RequestParam(defaultValue = "20") int pageSize,
                                                       @RequestParam(required = false) String status,
-                                                      @RequestParam Long customerId) {
+                                                      @RequestParam(required = false) Long customerId) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").descending());
         return OrderPageResponse.from(orderQueryService.getOrders(customerId, status, pageable));
     }
