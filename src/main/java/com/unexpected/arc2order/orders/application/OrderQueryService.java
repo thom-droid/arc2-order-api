@@ -1,22 +1,28 @@
 package com.unexpected.arc2order.orders.application;
 
-import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
+import com.unexpected.arc2order.orders.api.response.OrderDetailResponse;
 import com.unexpected.arc2order.orders.domain.OrderEntity;
+import com.unexpected.arc2order.orders.domain.OrderItemEntity;
+import com.unexpected.arc2order.orders.infrastructure.OrderItemRepository;
+import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 public class OrderQueryService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public OrderEntity getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(NoSuchElementException::new);
+    public OrderDetailResponse getOrderById(Long orderId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+        List<OrderItemEntity> orderItems = orderItemRepository.findAllByOrderEntity_Id(orderId);
+        return OrderDetailResponse.from(orderEntity, orderItems);
     }
 
     public Page<OrderEntity> getOrders(Long customerId, String status, Pageable pageable) {

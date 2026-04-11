@@ -1,4 +1,4 @@
-package com.unexpected.arc2order.orders.api;
+package com.unexpected.arc2order.orders.api.response;
 
 import com.unexpected.arc2order.orders.domain.OrderEntity;
 import org.springframework.data.domain.Page;

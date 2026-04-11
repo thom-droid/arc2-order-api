@@ -1,20 +1,20 @@
 package com.unexpected.arc2order.orders.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "orders2")
+@Table(name = "orders")
 @Getter
+@Setter
 public class OrderEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "customer_id", nullable = false)
@@ -28,4 +28,5 @@ public class OrderEntity {
 
     @Column(nullable = false)
     private BigDecimal amount;
+
 }
