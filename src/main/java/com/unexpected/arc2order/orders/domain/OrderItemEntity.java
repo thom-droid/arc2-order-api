@@ -1,5 +1,6 @@
 package com.unexpected.arc2order.orders.domain;
 
+import com.unexpected.arc2order.product.domain.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -23,9 +24,10 @@ public class OrderItemEntity {
     @NotNull
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
-    @NotNull
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

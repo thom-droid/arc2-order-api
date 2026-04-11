@@ -17,7 +17,7 @@ public record OrderDetailResponse(Long orderId,
     public static OrderDetailResponse from(OrderEntity orderEntity, List<OrderItemEntity> orderItems) {
         return new OrderDetailResponse(
                 orderEntity.getId(),
-                orderEntity.getCustomerId(),
+                orderEntity.getCustomer().getId(),
                 orderEntity.getStatus(),
                 orderEntity.getCreatedAt(),
                 orderEntity.getAmount(),

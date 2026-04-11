@@ -11,7 +11,7 @@ public record OrderItemDetailResponse(Long id,
     public static OrderItemDetailResponse from(OrderItemEntity orderItem) {
         return new OrderItemDetailResponse(
                 orderItem.getId(),
-                orderItem.getProductId(),
+                orderItem.getProduct().getId(),
                 orderItem.getUnitPrice(),
                 orderItem.getQuantity()
         );
