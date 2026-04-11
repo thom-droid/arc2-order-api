@@ -1,4 +1,6 @@
-package com.unexpected.arc2order.domain.orders;
+package com.unexpected.arc2order.orders.api;
+
+import com.unexpected.arc2order.orders.domain.OrderEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

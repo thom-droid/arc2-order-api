@@ -1,5 +1,7 @@
-package com.unexpected.arc2order.domain.orders;
+package com.unexpected.arc2order.orders.application;
 
+import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
+import com.unexpected.arc2order.orders.domain.OrderEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +11,7 @@ import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
-public class OrderService {
+public class OrderQueryService {
 
     private final OrderRepository orderRepository;
 

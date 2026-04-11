@@ -1,8 +1,8 @@
-package com.unexpected.arc2order.domain.orders;
+package com.unexpected.arc2order.orders.infrastructure;
 
+import com.unexpected.arc2order.orders.domain.OrderEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

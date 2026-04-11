@@ -1,4 +1,4 @@
-package com.unexpected.arc2order.domain.orders;
+package com.unexpected.arc2order.orders.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
