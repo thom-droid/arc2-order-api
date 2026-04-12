@@ -1,9 +1,7 @@
 package com.unexpected.arc2order.orders.api;
 
 import com.unexpected.arc2order.orders.api.request.CreateOrderRequest;
-import com.unexpected.arc2order.orders.api.response.CreateOrderResponse;
-import com.unexpected.arc2order.orders.api.response.OrderDetailResponse;
-import com.unexpected.arc2order.orders.api.response.OrderPageResponse;
+import com.unexpected.arc2order.orders.api.response.*;
 import com.unexpected.arc2order.orders.application.OrderCommandService;
 import com.unexpected.arc2order.orders.application.OrderItemQueryService;
 import com.unexpected.arc2order.orders.domain.OrderEntity;
@@ -41,5 +39,15 @@ public class OrderController {
     @PostMapping
     public CreateOrderResponse createOrder(@RequestBody @Validated CreateOrderRequest createOrderRequest) {
         return orderCommandService.createOrder(createOrderRequest);
+    }
+
+    @PostMapping("/{orderId}/confirm")
+    public OrderStatusUpdateResponse confirmOrder(@PathVariable Long orderId) {
+        return orderCommandService.confirmOrder(orderId);
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    public OrderStatusUpdateResponse cancelOrder(@PathVariable Long orderId) {
+        return orderCommandService.cancelOrder(orderId);
     }
 }

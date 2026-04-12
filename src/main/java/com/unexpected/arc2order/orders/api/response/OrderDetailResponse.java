@@ -18,7 +18,7 @@ public record OrderDetailResponse(Long orderId,
         return new OrderDetailResponse(
                 orderEntity.getId(),
                 orderEntity.getCustomer().getId(),
-                orderEntity.getStatus(),
+                orderEntity.getStatus().name(),
                 orderEntity.getCreatedAt(),
                 orderEntity.getAmount(),
                 orderItems.stream().map(OrderItemDetailResponse::from).toList()

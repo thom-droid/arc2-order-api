@@ -8,6 +8,6 @@ import java.util.List;
 
 public record CreateOrderRequest(
         @NotNull Long customerId,
-        @NotEmpty List<@Valid CreateOrderItemRequest> itemRequests) {
+        @NotEmpty List<@Valid CreateOrderItemRequest> items) {
 
 }

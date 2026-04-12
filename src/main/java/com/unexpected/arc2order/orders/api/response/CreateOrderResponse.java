@@ -15,7 +15,7 @@ public record CreateOrderResponse(Long orderId,
         return new CreateOrderResponse(
                 order.getId(),
                 order.getCustomer().getId(),
-                order.getStatus(),
+                order.getStatus().name(),
                 order.getCreatedAt(),
                 order.getAmount()
         );

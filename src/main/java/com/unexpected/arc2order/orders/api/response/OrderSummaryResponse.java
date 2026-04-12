@@ -15,7 +15,7 @@ public record OrderSummaryResponse(Long orderId,
         return new OrderSummaryResponse(
                 orderEntity.getId(),
                 orderEntity.getCustomer().getId(),
-                orderEntity.getStatus(),
+                orderEntity.getStatus().name(),
                 orderEntity.getCreatedAt(),
                 orderEntity.getAmount()
         );

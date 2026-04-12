@@ -1,6 +1,7 @@
 package com.unexpected.arc2order.orders.application;
 
 import com.unexpected.arc2order.orders.api.response.OrderDetailResponse;
+import com.unexpected.arc2order.orders.application.exception.OrderNotFoundException;
 import com.unexpected.arc2order.orders.domain.OrderEntity;
 import com.unexpected.arc2order.orders.domain.OrderItemEntity;
 import com.unexpected.arc2order.orders.infrastructure.OrderItemRepository;

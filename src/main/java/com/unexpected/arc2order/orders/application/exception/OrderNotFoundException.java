@@ -1,4 +1,4 @@
-package com.unexpected.arc2order.orders.application;
+package com.unexpected.arc2order.orders.application.exception;
 
 public class OrderNotFoundException extends RuntimeException {
     public OrderNotFoundException(Long orderId) {
