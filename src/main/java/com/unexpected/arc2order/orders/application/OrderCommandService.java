@@ -5,7 +5,7 @@ import com.unexpected.arc2order.customer.domain.Customer;
 import com.unexpected.arc2order.orders.api.request.CreateOrderRequest;
 import com.unexpected.arc2order.orders.api.response.CreateOrderResponse;
 import com.unexpected.arc2order.orders.api.response.OrderStatusUpdateResponse;
-import com.unexpected.arc2order.orders.application.exception.*;
+import com.unexpected.arc2order.orders.application.exception.OrderNotFoundException;
 import com.unexpected.arc2order.orders.domain.OrderEntity;
 import com.unexpected.arc2order.orders.domain.OrderItemEntity;
 import com.unexpected.arc2order.orders.domain.OrderStatus;
@@ -29,7 +29,6 @@ public class OrderCommandService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerQueryService customerQueryService;
     private final ProductQueryService productQueryService;
-
 
     @Transactional
     public CreateOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
@@ -66,43 +65,18 @@ public class OrderCommandService {
         return CreateOrderResponse.from(savedOrder);
     }
 
+    @Transactional
     public OrderStatusUpdateResponse confirmOrder(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        OrderStatus status = order.getStatus();
-        if (status == OrderStatus.CONFIRMED) {
-            throw new OrderAlreadyConfirmedException(orderId);
-        }
-
-        if (status == OrderStatus.CANCELLED) {
-            throw new OrderAlreadyCancelledException(orderId);
-        }
-
         order.markAsConfirmed();
-        order.setUpdatedAt(LocalDateTime.now());
         OrderEntity savedOrder = orderRepository.save(order);
-
         return OrderStatusUpdateResponse.from(savedOrder);
     }
 
+    @Transactional
     public OrderStatusUpdateResponse cancelOrder(Long orderId) {
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
-        OrderStatus status = order.getStatus();
-
-        if (status == OrderStatus.CANCELLED) {
-            throw new OrderAlreadyCancelledException(orderId);
-        }
-
-        if (status == OrderStatus.SHIPPED) {
-            throw new OrderAlreadyShippedException(orderId);
-        }
-
-        if (status == OrderStatus.CREATED) {
-            throw new InvalidOrderStatusException(orderId);
-        }
-
         order.markAsCancelled();
-        order.setUpdatedAt(LocalDateTime.now());
         OrderEntity savedOrder = orderRepository.save(order);
         return OrderStatusUpdateResponse.from(savedOrder);
     }
