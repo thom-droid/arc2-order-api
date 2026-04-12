@@ -1,5 +1,6 @@
 package com.unexpected.arc2order.orders.api;
 
+import com.unexpected.arc2order.orders.application.exception.IdempotencyKeyConflictException;
 import com.unexpected.arc2order.orders.application.exception.OrderNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,18 @@ public class OrderExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(IdempotencyKeyConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleIdempotencyKeyConflictException(IdempotencyKeyConflictException ex, HttpServletRequest request) {
+
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+                "IDEMPOTENCY_KEY_CONFLICT",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

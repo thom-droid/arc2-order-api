@@ -6,23 +6,28 @@ import com.unexpected.arc2order.orders.api.request.CreateOrderItemRequest;
 import com.unexpected.arc2order.orders.api.request.CreateOrderRequest;
 import com.unexpected.arc2order.orders.api.response.CreateOrderResponse;
 import com.unexpected.arc2order.orders.api.response.OrderStatusUpdateResponse;
+import com.unexpected.arc2order.orders.application.exception.IdempotencyKeyConflictException;
 import com.unexpected.arc2order.orders.application.exception.OrderNotFoundException;
 import com.unexpected.arc2order.orders.domain.OrderEntity;
+import com.unexpected.arc2order.orders.domain.OrderIdempotency;
 import com.unexpected.arc2order.orders.domain.OrderItemEntity;
 import com.unexpected.arc2order.orders.domain.OrderStatus;
+import com.unexpected.arc2order.orders.infrastructure.OrderIdempotencyRepository;
 import com.unexpected.arc2order.orders.infrastructure.OrderItemRepository;
 import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
 import com.unexpected.arc2order.product.application.ProductNotFoundException;
-import com.unexpected.arc2order.product.application.ProductQueryService;
 import com.unexpected.arc2order.product.domain.Product;
 import com.unexpected.arc2order.product.infrastructure.ProductRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -35,11 +40,20 @@ public class OrderCommandService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CustomerQueryService customerQueryService;
-    private final ProductQueryService productQueryService;
     private final ProductRepository productRepository;
+    private final OrderIdempotencyRepository orderIdempotencyRepository;
 
     @Transactional
-    public CreateOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
+    public CreateOrderResponse createOrder(String idempotencyKey, CreateOrderRequest createOrderRequest) {
+        String requestHash = createRequestHash(createOrderRequest);
+
+        OrderIdempotency existingIdempotency = orderIdempotencyRepository.findByIdempotencyKey(idempotencyKey)
+                .orElse(null);
+
+        if (existingIdempotency != null) {
+            return handleExistingIdempotency(existingIdempotency, requestHash);
+        }
+
         Long customerId = createOrderRequest.customerId();
         Customer customer = customerQueryService.findById(customerId);
 
@@ -86,6 +100,7 @@ public class OrderCommandService {
 
         orderItemEntities.forEach(oi -> oi.setOrderEntity(savedOrder));
         orderItemRepository.saveAll(orderItemEntities);
+        persistOrderIdempotency(idempotencyKey, requestHash, savedOrder.getId());
 
         return CreateOrderResponse.from(savedOrder);
     }
@@ -106,4 +121,44 @@ public class OrderCommandService {
         return OrderStatusUpdateResponse.from(savedOrder);
     }
 
+    private String createRequestHash(CreateOrderRequest createOrderRequest) {
+        // productId : quantity
+        String collect = createOrderRequest.items().stream()
+                .map(i -> i.productId() + ":" + i.quantity())
+                .collect(Collectors.joining(","));
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("sha256");
+            byte[] digest = messageDigest.digest(collect.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+           throw new RuntimeException(e);
+        }
+    }
+
+    private void persistOrderIdempotency(String idempotencyKey, String requestHash, Long savedOrderId) {
+        OrderIdempotency orderIdempotency = new OrderIdempotency();
+        orderIdempotency.setOrderId(savedOrderId);
+        orderIdempotency.setIdempotencyKey(idempotencyKey);
+        orderIdempotency.setRequestHash(requestHash);
+        orderIdempotency.setCreatedAt(LocalDateTime.now());
+        orderIdempotency.setUpdatedAt(LocalDateTime.now());
+        orderIdempotency.setStatus("SUCCEEDED");
+        orderIdempotencyRepository.save(orderIdempotency);
+    }
+
+    private CreateOrderResponse handleExistingIdempotency(OrderIdempotency existingIdempotency, String requestHash) {
+
+        if (!requestHash.equals(existingIdempotency.getRequestHash())) {
+            throw new IdempotencyKeyConflictException("Request hash mismatch");
+        }
+
+        Long orderId = existingIdempotency.getOrderId();
+        if (orderId == null) {
+            throw new IdempotencyKeyConflictException("Order id mismatch");
+        }
+
+        return CreateOrderResponse.from(
+                orderRepository.findById(orderId)
+                        .orElseThrow(() -> new OrderNotFoundException(orderId)));
+    }
 }

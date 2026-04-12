@@ -3,10 +3,7 @@ package com.unexpected.arc2order.orders.api;
 import com.unexpected.arc2order.orders.api.request.CreateOrderRequest;
 import com.unexpected.arc2order.orders.api.response.*;
 import com.unexpected.arc2order.orders.application.OrderCommandService;
-import com.unexpected.arc2order.orders.application.OrderItemQueryService;
-import com.unexpected.arc2order.orders.domain.OrderEntity;
 import com.unexpected.arc2order.orders.application.OrderQueryService;
-import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,8 +34,10 @@ public class OrderController {
     }
 
     @PostMapping
-    public CreateOrderResponse createOrder(@RequestBody @Validated CreateOrderRequest createOrderRequest) {
-        return orderCommandService.createOrder(createOrderRequest);
+    public CreateOrderResponse createOrder(
+            @RequestHeader(value = "Idempotency-Key") String idempotencyKey,
+            @RequestBody @Validated CreateOrderRequest createOrderRequest) {
+        return orderCommandService.createOrder(idempotencyKey, createOrderRequest);
     }
 
     @PostMapping("/{orderId}/confirm")
