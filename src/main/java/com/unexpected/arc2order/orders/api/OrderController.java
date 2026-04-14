@@ -4,6 +4,7 @@ import com.unexpected.arc2order.orders.api.request.CreateOrderRequest;
 import com.unexpected.arc2order.orders.api.response.*;
 import com.unexpected.arc2order.orders.application.OrderCommandService;
 import com.unexpected.arc2order.orders.application.OrderQueryService;
+import com.unexpected.arc2order.orders.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ public class OrderController {
     @GetMapping
     public OrderPageResponse getOrderEntities(@RequestParam(defaultValue = "0") int pageNumber,
                                               @RequestParam(defaultValue = "20") int pageSize,
-                                              @RequestParam(required = false) String status,
+                                              @RequestParam(required = false) OrderStatus status,
                                               @RequestParam(required = false) Long customerId) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").descending());
         return OrderPageResponse.from(orderQueryService.getOrders(customerId, status, pageable));
@@ -49,4 +50,13 @@ public class OrderController {
     public OrderStatusUpdateResponse cancelOrder(@PathVariable Long orderId) {
         return orderCommandService.cancelOrder(orderId);
     }
+
+    @GetMapping("/cursor")
+    public OrderPageByCursorResponse getOrdersByCursor(@RequestParam(required = false, name = "status") OrderStatus status,
+                                                       @RequestParam(required = false, name = "cursor") String cursorStr,
+                                                       @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        return orderQueryService.getOrdersByCursor(status, cursorStr, pageSize);
+    }
+
 }
