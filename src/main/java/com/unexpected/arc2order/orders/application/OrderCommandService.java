@@ -8,10 +8,7 @@ import com.unexpected.arc2order.orders.api.response.CreateOrderResponse;
 import com.unexpected.arc2order.orders.api.response.OrderStatusUpdateResponse;
 import com.unexpected.arc2order.orders.application.exception.IdempotencyKeyConflictException;
 import com.unexpected.arc2order.orders.application.exception.OrderNotFoundException;
-import com.unexpected.arc2order.orders.domain.OrderEntity;
-import com.unexpected.arc2order.orders.domain.OrderIdempotency;
-import com.unexpected.arc2order.orders.domain.OrderItemEntity;
-import com.unexpected.arc2order.orders.domain.OrderStatus;
+import com.unexpected.arc2order.orders.domain.*;
 import com.unexpected.arc2order.orders.infrastructure.OrderIdempotencyRepository;
 import com.unexpected.arc2order.orders.infrastructure.OrderItemRepository;
 import com.unexpected.arc2order.orders.infrastructure.OrderRepository;
@@ -42,6 +39,7 @@ public class OrderCommandService {
     private final CustomerQueryService customerQueryService;
     private final ProductRepository productRepository;
     private final OrderIdempotencyRepository orderIdempotencyRepository;
+    private final OrderStore orderStore;
 
     @Transactional
     public CreateOrderResponse createOrder(String idempotencyKey, CreateOrderRequest createOrderRequest) {
@@ -107,17 +105,17 @@ public class OrderCommandService {
 
     @Transactional
     public OrderStatusUpdateResponse confirmOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
-        order.markAsConfirmed();
-        OrderEntity savedOrder = orderRepository.save(order);
+        Order order = orderStore.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.confirm();
+        Order savedOrder = orderStore.save(order);
         return OrderStatusUpdateResponse.from(savedOrder);
     }
 
     @Transactional
     public OrderStatusUpdateResponse cancelOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
-        order.markAsCancelled();
-        OrderEntity savedOrder = orderRepository.save(order);
+        Order order = orderStore.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.cancel();
+        Order savedOrder = orderStore.save(order);
         return OrderStatusUpdateResponse.from(savedOrder);
     }
 
